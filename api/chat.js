@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     // KONFIGURASI KREATIFITAS
     // temperature: 0.9 membuat jawaban luwes.
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash-latest" });
+    model: "gemini-pro" });
     {
             temperature: 0.9, 
             topP: 0.95,
