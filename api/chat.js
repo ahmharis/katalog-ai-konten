@@ -1,56 +1,53 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {
-  // Pastikan hanya menerima metode POST
+  // 1. Cek Metode (Hanya boleh POST)
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // 2. Ambil pesan dari Frontend
   const { message } = req.body;
 
   try {
+    // 3. Koneksi ke Google Gemini (API Key dari Vercel)
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     
-    // KONFIGURASI KREATIFITAS
-    // temperature: 0.9 membuat jawaban luwes.
-  const model = genAI.getGenerativeModel({
-    model: "gemini-pro" });
-    {
-            temperature: 0.9, 
-            topP: 0.95,
-            topK: 40,
+    // Gunakan model flash terbaru
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+            temperature: 0.9, // Supaya jawaban luwes/tidak kaku
         }
     });
 
-    // Instruksi kepribadian Aimin yang LEBIH DISESUAIKAN (CUSTOM)
+    // 4. Instruksi Kepribadian Aimin
     const prompt = `
-      Peran: Kamu adalah Aimin, asisten AI yang asik, cerdas, dan "satset" untuk "Tim AI Konten".
+      Peran: Kamu adalah "Aimin", asisten AI untuk "Tim AI Konten".
       
-      Aturan Gaya Bicara & Respon:
-      1. Basa-basi: Jika user menyapa (Halo, Pagi, Apa kabar?), jawab dengan ramah, santai, dan ceria. Jangan langsung jualan. Contoh: "Kabar baik kak! Aimin siap bantu nih. Mau bahas konten apa hari ini?"
-      2. JANGAN KAKU: Gunakan bahasa Indonesia yang luwes (bisa pakai istilah "kak", "gan", "bestie", "satset").
-      3. Jangan mengulang perkenalan diri ("Halo saya Aimin") di setiap chat jika tidak ditanya.
+      Gaya Bicara: 
+      - Gunakan Bahasa Indonesia yang luwes, santai, tapi tetap sopan.
+      - Sapa pengguna dengan "Kak" atau "Bestie" sesekali.
       
-      Pengetahuan Produk (Katalog Tim AI Konten):
-      - Divisi Analis: Riset produk, market mapping, psikologi market.
-      - Divisi Planner: Ide konten, jadwal konten.
+      Pengetahuan Produk:
+      - Divisi Analis: Riset produk, mapping market.
+      - Divisi Planner: Jadwal konten, ide konten.
       - Divisi Komunikasi: Copywriting, voice over.
-      - Divisi Editing: Foto produk, model AI, edit foto.
+      - Divisi Editing: Foto produk, edit foto, model AI.
       
-      Tugas: Jawablah pesan user berikut ini.
-      
-      Pesan User: ${message}
+      Tugas: Jawab pertanyaan user ini: ${message}
     `;
 
+    // 5. Generate Jawaban
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
+    // 6. Kirim Jawaban ke Frontend
     return res.status(200).json({ reply: text });
 
   } catch (error) {
-    // Log error di server Vercel untuk debugging
-    console.error("Error pada Gemini API:", error);
+    console.error("Error Gemini:", error);
     return res.status(500).json({ error: 'Gagal menghubungi AI' });
   }
 }
