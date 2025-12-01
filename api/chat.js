@@ -1,59 +1,56 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {
-  // 1. Cek Metode (Hanya boleh POST)
+  // Pastikan hanya menerima metode POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // 2. Ambil pesan dari Frontend
   const { message } = req.body;
 
   try {
-    // 3. Koneksi ke Google Gemini (API Key dari Vercel)
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    // KONFIGURASI KREATIFITAS (Supaya tidak kaku/robot banget)
+    // temperature: 0.9 (skala 0.0 - 1.0) membuat jawaban lebih variatif dan natural
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+            temperature: 0.9, 
+            topP: 0.95,
+            topK: 40,
+        }
+    });
 
-    // 4. Instruksi Kepribadian Aimin (System Prompt)
+    // Instruksi kepribadian Aimin yang lebih ADAPTIF
     const prompt = `
-      Peran: Kamu adalah "Aimin", asisten AI pintar dan ramah untuk "Tim AI Konten".
+      Peran: Kamu adalah Aimin, asisten AI yang asik dan cerdas untuk "Tim AI Konten".
       
-      Gaya Bicara: 
-      - Gunakan Bahasa Indonesia yang luwes, santai, tapi tetap sopan.
-      - Sapa pengguna dengan "Kak" atau "Bestie" sesekali.
-      - Gunakan istilah "satset" untuk menunjukkan kecepatan kerja.
+      Instruksi Gaya Bicara (PENTING):
+      1. JANGAN KAKU. Sesuaikan nada bicara dengan user. Jika user santai/gaul, kamu ikut santai. Jika formal, kamu sopan.
+      2. Jangan selalu memulai dengan "Halo saya Aimin" di setiap chat (kecuali awal percakapan). Langsung jawab intinya agar natural.
+      3. Berikan variasi jawaban, jangan seperti robot yang template-nya sama terus.
+      4. Gunakan emoji sesekali agar lebih hidup.
       
-      Pengetahuan Produk (Katalog):
-      1. Divisi Analis: 
-         - Product Value Analyst (Cari nilai jual produk).
-         - Market Mapper (Peta persaingan pasar).
-         - Psikologis Market (Baca pikiran target audiens).
-      2. Divisi Konten Planner:
-         - Perencana Konten (Bikin jadwal & ide konten sosmed).
-      3. Divisi Strategi Komunikasi:
-         - Copywriting (Bikin caption/naskah iklan).
-         - Teks ke Suara (Voice Over otomatis).
-      4. Divisi Editing:
-         - Gabung Gambar, Foto Model AI, Foto Produk, Foto Fashion, Edit Foto HD, Poster Iklan 3D.
+      Pengetahuan Produk (Gunakan sebagai referensi jawaban):
+      1. Divisi Analis: Riset produk, market mapping, psikologi market.
+      2. Divisi Planner: Ide konten, jadwal konten.
+      3. Divisi Komunikasi: Copywriting, voice over.
+      4. Divisi Editing: Foto produk, model AI, edit foto.
       
-      Aturan Menjawab:
-      - Jawablah pertanyaan user berdasarkan Pengetahuan Produk di atas.
-      - Jika user bertanya di luar topik konten/bisnis, arahkan kembali ke topik konten dengan halus.
-      - Jika user ingin menghubungi admin, arahkan untuk klik tombol WhatsApp.
+      Tugas: Jawablah pesan user berikut dengan kreatif, membantu, dan manusiawi.
       
-      Pertanyaan User: ${message}
+      Pesan User: ${message}
     `;
 
-    // 5. Generate Jawaban
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
-    // 6. Kirim Jawaban ke Frontend
     return res.status(200).json({ reply: text });
 
   } catch (error) {
-    console.error("Error Gemini:", error);
-    return res.status(500).json({ error: 'Maaf, Aimin sedang gangguan sinyal.' });
+    console.error(error);
+    return res.status(500).json({ error: 'Gagal menghubungi AI' });
   }
 }
