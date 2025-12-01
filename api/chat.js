@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     
     // Gunakan model STANDAR (Paling stabil)
     const model = genAI.getGenerativeModel({ 
-        model: "gemini-pro", 
+        model: "gemini-1.5-flash", 
         generationConfig: {
             temperature: 0.9, 
         }
