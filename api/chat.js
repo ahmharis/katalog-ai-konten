@@ -13,11 +13,11 @@ export default async function handler(req, res) {
     // 3. Koneksi ke Google Gemini (API Key dari Vercel)
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     
-    // Gunakan model flash terbaru
+    // GANTI MODEL KE VERSI 'LATEST' (Lebih Stabil Dikenali)
     const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
+        model: "gemini-1.5-flash-latest", 
         generationConfig: {
-            temperature: 0.9, // Supaya jawaban luwes/tidak kaku
+            temperature: 0.9, 
         }
     });
 
