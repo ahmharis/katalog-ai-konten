@@ -1,6 +1,16 @@
 {
-  "type": "module",
+  "name": "katalog-aimin-stackblitz",
+  "version": "1.0.0",
+  "description": "Server Aimin Bot untuk StackBlitz",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
     "@google/generative-ai": "^0.21.0"
-  }
+  },
+  "keywords": []
 }
